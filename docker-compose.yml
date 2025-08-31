@@ -1,0 +1,23 @@
+# tiny ring buffer logs -> fewer SD writes
+x-logging: &log_min
+  driver: json-file
+  options:
+    max-size: "1m"
+    max-file: "1"
+    compress: "false"
+
+services:
+  homebridge:
+    image: homebridge/homebridge:2025-08-20
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - "ENABLE_AVAHI=0"
+      - "TZ=Europe/London"
+    tmpfs:
+      - /home/homebridge/.npm:rw,mode=1777,size=128m
+      - /run:rw,exec,nosuid,nodev,size=16m
+      - /tmp
+    volumes:
+      - "${HOME}/data/homebridge:/homebridge:rw"
+    logging: *log_min
