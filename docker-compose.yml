@@ -8,11 +8,15 @@ x-logging: &log_min
 
 services:
   homebridge:
-    image: homebridge/homebridge:2025-08-20
+    build: ./image/homebridge
     restart: unless-stopped
+    depends_on: [mosquitto]
     network_mode: host
     environment:
       - "ENABLE_AVAHI=0"
+      - "HB_Z2M_BASE_TOPIC=zigbee2mqtt"
+      - "HB_Z2M_MQTT_URL=mqtt://127.0.0.1:1883"
+      - "NPM_CONFIG_CACHE=/tmp/npm-cache"
       - "TZ=Europe/London"
     tmpfs:
       - /home/homebridge/.npm:rw,mode=1777,size=128m
@@ -21,3 +25,50 @@ services:
     volumes:
       - "${HOME}/data/homebridge:/homebridge:rw"
     logging: *log_min
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0.22-openssl
+    restart: unless-stopped
+    networks: [zigbee2mqtt_private]
+    ports:
+      - "127.0.0.1:1883:1883"  # expose only to the host
+    volumes:
+      - ./config/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - type: tmpfs
+        target: /mosquitto/data
+        tmpfs:
+          size: 16m
+      - type: tmpfs
+        target: /mosquitto/log
+        tmpfs:
+          size: 4m
+    logging: *log_min
+
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt:2.6.0
+    restart: unless-stopped
+    depends_on: [mosquitto]
+    networks: [zigbee2mqtt_private]
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=Europe/London
+      - Z2M_ONBOARD_NO_SERVER=1
+      - ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL=20 # avoid common Wi-Fi overlap
+      - ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_LEVEL=warning
+      - ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT=["console"]
+      - ZIGBEE2MQTT_CONFIG_FRONTEND_ENABLED=true
+      - ZIGBEE2MQTT_CONFIG_MQTT_CLIENT_ID=zigbee2mqtt
+      - ZIGBEE2MQTT_CONFIG_MQTT_KEEPALIVE=60
+      - ZIGBEE2MQTT_CONFIG_MQTT_SERVER=mqtt://mosquitto:1883
+      - ZIGBEE2MQTT_CONFIG_PERMIT_JOIN=true
+      - ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER=${ZIGBEE_SERIAL_ADAPTER}
+      - ZIGBEE2MQTT_CONFIG_SERIAL_PORT=/dev/ttyUSB0
+    devices:
+      - "${ZIGBEE_SERIAL_PORT}:/dev/ttyUSB0"
+    volumes:
+      - "${HOME}/data/zigbee2mqtt:/app/data"
+    logging: *log_min
+
+networks:
+  zigbee2mqtt_private:
