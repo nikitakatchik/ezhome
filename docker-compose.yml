@@ -45,25 +45,26 @@ services:
     logging: *log_min
 
   zigbee2mqtt:
-    image: koenkk/zigbee2mqtt:2.6.0
+    image: koenkk/zigbee2mqtt:2.6.1
     restart: unless-stopped
     depends_on: [mosquitto]
     networks: [zigbee2mqtt_private]
     ports:
       - "8080:8080"
     environment:
-      - TZ=Europe/London
-      - Z2M_ONBOARD_NO_SERVER=1
-      - ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL=20 # avoid common Wi-Fi overlap
-      - ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_LEVEL=warning
-      - ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT=["console"]
-      - ZIGBEE2MQTT_CONFIG_FRONTEND_ENABLED=true
-      - ZIGBEE2MQTT_CONFIG_MQTT_CLIENT_ID=zigbee2mqtt
-      - ZIGBEE2MQTT_CONFIG_MQTT_KEEPALIVE=60
-      - ZIGBEE2MQTT_CONFIG_MQTT_SERVER=mqtt://mosquitto:1883
-      - ZIGBEE2MQTT_CONFIG_PERMIT_JOIN=true
-      - ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER=${ZIGBEE_SERIAL_ADAPTER}
-      - ZIGBEE2MQTT_CONFIG_SERIAL_PORT=/dev/ttyUSB0
+      - "TZ=Europe/London"
+      - "Z2M_ONBOARD_NO_SERVER=1"
+      - "ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL=20" # avoid common Wi-Fi overlap
+      - "ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_LEVEL=warning"
+      - "ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT=[\"console\"]"
+      - "ZIGBEE2MQTT_CONFIG_FRONTEND_AUTH_TOKEN=${ZIGBEE_AUTH_TOKEN}"
+      - "ZIGBEE2MQTT_CONFIG_FRONTEND_ENABLED=true"
+      - "ZIGBEE2MQTT_CONFIG_MQTT_CLIENT_ID=zigbee2mqtt"
+      - "ZIGBEE2MQTT_CONFIG_MQTT_KEEPALIVE=60"
+      - "ZIGBEE2MQTT_CONFIG_MQTT_SERVER=mqtt://mosquitto:1883"
+      - "ZIGBEE2MQTT_CONFIG_PERMIT_JOIN=false"
+      - "ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER=${ZIGBEE_SERIAL_ADAPTER}"
+      - "ZIGBEE2MQTT_CONFIG_SERIAL_PORT=/dev/ttyUSB0"
     devices:
       - "${ZIGBEE_SERIAL_PORT}:/dev/ttyUSB0"
     volumes:
