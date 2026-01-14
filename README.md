@@ -10,7 +10,7 @@ ZIGBEE_SERIAL_ADAPTER=${ZIGBEE_ADAPTER} # check official guidance https://www.zi
 ZIGBEE_SERIAL_PORT=/dev/serial/by-id/${ZIGBEE_DEVICE}
 ```
 
-2. Invoke `docker compose up -d`.
+2. Invoke `docker compose up -d --build`.
 
 Homebridge will be available at `http://${DOCKER_HOST}:8581`.
 

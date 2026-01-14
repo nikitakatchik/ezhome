@@ -1,4 +1,4 @@
-FROM homebridge/homebridge:2025-08-29
+FROM homebridge/homebridge:2026-01-14
 
 # Add jq for safe JSON edits
 RUN \
